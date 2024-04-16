@@ -1,0 +1,9 @@
+export const success_code = 200;
+export const not_found_code = 404;
+export const invalid_code = 400;
+export const validation_code = 422;
+export const resource_code = 201;
+export const unprocessableEntity = 422;
+export const internalServerError = 500;
+export const badGateway = 502;
+export const unauthorized = 401;
