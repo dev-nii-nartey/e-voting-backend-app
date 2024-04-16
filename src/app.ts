@@ -1,32 +1,49 @@
 import express, { Request, Response, NextFunction } from "express";
-import createError from "http-errors";
 import morgan from "morgan";
 import cors from "cors";
-require("dotenv").config();
+// import { limiter } from "./app/middlewares/rate-limitter";
+import bodyParser from "body-parser";
+import {
+  ADMIN_EMAIL,
+  ADMIN_ID,
+  ADMIN_NAME,
+  ADMIN_PASSWORD,
+  PORT,
+} from "./app/configs/env-config";
+import {
+  errorEmitter,
+  errorHandler,
+} from "./app/middlewares/errors-middleware";
+import { authRoute } from "./routes/auth-route";
+import UserRepository from "./app/models/user-model";
+import { Role } from "@prisma/client";
+// import { liftOff } from "./app/configs/lift.off-config";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
+// app.use(limiter);
 
-app.get("/", async (req, res, next) => {
-  res.send({ message: "Awesome it works 🐻" });
+app.use("/api", authRoute);
+
+app.use(errorHandler);
+app.use(errorEmitter);
+
+app.listen(PORT, async () => {
+  console.log(`docs hosted on http://localhost:${PORT}/api/docs`);
+  const existingUser = await UserRepository.findUser(ADMIN_EMAIL);
+  if (existingUser) {
+    console.log("was not null");
+    return;
+  }
+  const userRepo = new UserRepository(
+    ADMIN_EMAIL,
+    ADMIN_PASSWORD,
+    ADMIN_ID,
+    Role.ADMIN,
+    ADMIN_NAME
+  );
+  await userRepo.add();
 });
-
-app.use("/api", require("./routes/api.route"));
-
-app.use((req, res, next) => {
-  next(createError.NotFound());
-});
-
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  res.status(err.status || 500);
-  res.send({
-    status: err.status || 500,
-    message: err.message,
-  });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 @ http://localhost:${PORT}`));
