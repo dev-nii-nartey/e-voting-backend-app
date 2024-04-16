@@ -4,8 +4,8 @@
   "description": "The backend of a voting app",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node ./dist/app.js",
+    "dev": "nodemon ./src/app.ts",
     "test": "jest"
   },
   "keywords": [],
