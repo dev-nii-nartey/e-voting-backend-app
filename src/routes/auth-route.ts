@@ -1,9 +1,7 @@
-import router from "express";
 import { Router } from "express";
-import { body } from "express-validator";
+import { body, header } from "express-validator";
 import UserRepository from "../app/models/user-model";
 import AuthController from "../app/controllers/auth-controller";
-import AdminController from "../app/controllers/admin-controller";
 import { errorController } from "../app/middlewares/errors-middleware";
 import IsAdmin from "../app/middlewares/is.admin-middleware";
 import IsRegistrar from "../app/middlewares/is.registrar-middleware";
@@ -51,8 +49,9 @@ authRoute.post(
       }
     }),
   body("name").notEmpty().trim().toLowerCase().escape(),
+  header("authorization").notEmpty().trim().escape(),
   IsAdmin.tokenValidator,
-  errorController(AdminController.register)
+  errorController(AuthController.register)
 );
 
 authRoute.post(
@@ -71,6 +70,7 @@ authRoute.post(
       }
     }),
   body("name").notEmpty().trim().toLowerCase().escape(),
+  header("authorization").notEmpty().trim().escape().withMessage('provide an access token'),
   IsRegistrar.tokenValidator,
-  errorController(AdminController.register)
+  errorController(AuthController.register)
 );
