@@ -5,10 +5,13 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../middlewares/jwt-middleware";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { HttpException } from "../exceptions/exception";
 import { success_code, unprocessableEntity } from "../configs/status-code";
 import { JsonOutput } from "../middlewares/json.response-middleware";
+import { userRole } from "../utils/roles";
+import { Password } from "../utils/password.generator";
+import { Role } from "@prisma/client";
 
 export default class AuthController {
   constructor() {}
@@ -27,12 +30,39 @@ export default class AuthController {
     }
     const user = await UserRepository.findByUniqueKey(email);
     const accessToken = await generateAccessToken({ user: user?.id });
-    console.log(accessToken);
     const refreshToken = await generateRefreshToken({ user: user?.email });
-    console.log(refreshToken);
     const responseData = {
       message: "User credentials passed, and is able to log in successfully",
       details: { accessToken, refreshToken },
+    };
+    return response.status(success_code).json(new JsonOutput(responseData));
+  }
+
+  static async register(
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) {
+    const result = validationResult(request);
+    if (!result.isEmpty()) {
+      throw new HttpException(unprocessableEntity, result.array());
+    }
+    const { name, email } = matchedData(request);
+    const role = userRole(request.url);
+    console.log(role)
+    const password = Password.generate();
+    const userId = await UserRepository.customUserId(role);
+    const userPayload = new UserRepository(
+      email,
+      password,
+      userId,
+      role,
+      name
+    );
+    const newUser = await userPayload.add();
+    const responseData = {
+      message: `User account created successfully`,
+      details: { newUser },
     };
     return response.status(success_code).json(new JsonOutput(responseData));
   }
