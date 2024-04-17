@@ -5,6 +5,7 @@ import { success_code, unprocessableEntity } from "../configs/status-code";
 import { JsonOutput } from "../middlewares/json.response-middleware";
 import CandidateRepository from "../models/candidate-model";
 import Database from "../configs/db-config";
+import { candidatePortfolio } from "../utils/portfolio";
 
 export default class AdminController {
   constructor() {}
@@ -17,13 +18,13 @@ export default class AdminController {
       name,
       nssNumber,
       district,
-      portfolio,
       institutionAttended,
       qualification,
       posting,
       position,
       contact,
     } = matchedData(request);
+    const portfolio = candidatePortfolio(position)
     const candidate = new CandidateRepository(
       name,
       nssNumber,
@@ -43,12 +44,12 @@ export default class AdminController {
     return response.status(success_code).json(new JsonOutput(responseData));
   }
 
-  // static async fetchAllCandidates(request: Request, response: Response) {
-  //   const candidates = await CandidateRepository.fetchCandidates();
-  //   const responseData = {
-  //     message: `Candidate  added successfully`,
-  //     details: { candidates },
-  //   };
-  //   return response.status(success_code).json(new JsonOutput(responseData));
-  // }
+  static async fetchAllCandidates(request: Request, response: Response) {
+    const candidates = await CandidateRepository.fetchCandidates();
+    const responseData = {
+      message: `Candidate  retreived successfully`,
+      details: { candidates },
+    };
+    return response.status(success_code).json(new JsonOutput(responseData));
+  }
 }
