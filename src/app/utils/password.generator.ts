@@ -1,7 +1,7 @@
 export class Password {
-  static generate(passwordLength: number = 10) {
+  static generate(passwordLength: number =5) {
     let characters =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%&";
+      "abcdefghIJKLMNTUVWXYZ056789@$%&";
     let charactersLength = characters.length;
     let generatedPassword = "";
 
@@ -15,6 +15,6 @@ export class Password {
       generatedPassword += characters[index];
     }
 
-    return generatedPassword;
+    return `VtAp-${generatedPassword}`;
   }
 }
