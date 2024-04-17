@@ -7,15 +7,8 @@ import { JsonOutput } from "./json.response-middleware";
 // import { JsonOutput } from "./response.middleware";
 
 //ERROR MIDDLEWARE TO CATCH UNRESOLVED ERRORS
-export const errorHandler = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  next(createError.NotFound());
-};
-
-export const errorEmitter = (err: any, req: Request, res: Response) => {
+export const errorHandler = ( req: Request, res: Response) => {
+ const err = createError.NotFound()
   res.status(err.status || 500);
   res.json({
     status: err.status || 500,

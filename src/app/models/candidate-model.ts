@@ -36,7 +36,6 @@ export default class CandidateRepository {
       await Database.close();
       return user;
     } catch (error) {
-      console.log("this", error);
       throw new Error("Ops something went wrong, failed to register new user");
     }
   }
@@ -53,7 +52,6 @@ export default class CandidateRepository {
       throw new Error();
     }
   }
-
 
   //ANALYTICS NEED WORK ON
   static async fetchCandidatesAnalytics() {
@@ -90,5 +88,12 @@ export default class CandidateRepository {
         votePercentage,
       };
     });
+  }
+
+  static async fetchCandidates() {
+    const prisma = Database.open();
+    const candidates = await prisma.candidate.findMany();
+    await Database.close();
+    return candidates;
   }
 }

@@ -34,7 +34,7 @@ authRoute.post(
 
 //REGISTER
 authRoute.post(
-  "/enroll/registrar",
+  "/registrar",
   body("email")
     .notEmpty()
     .trim()
@@ -55,7 +55,7 @@ authRoute.post(
 );
 
 authRoute.post(
-  "/enroll/voter",
+  "/voter",
   body("email")
     .notEmpty()
     .trim()

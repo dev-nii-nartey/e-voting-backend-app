@@ -49,7 +49,6 @@ export default class AuthController {
     }
     const { name, email } = matchedData(request);
     const role = userRole(request.url);
-    console.log(role)
     const password = Password.generate();
     const userId = await UserRepository.customUserId(role);
     const userPayload = new UserRepository(
@@ -62,7 +61,7 @@ export default class AuthController {
     const newUser = await userPayload.add();
     const responseData = {
       message: `User account created successfully`,
-      details: { newUser },
+      details: { newUser,password },
     };
     return response.status(success_code).json(new JsonOutput(responseData));
   }

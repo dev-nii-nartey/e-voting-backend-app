@@ -11,12 +11,12 @@ import {
   PORT,
 } from "./app/configs/env-config";
 import {
-  errorEmitter,
   errorHandler,
 } from "./app/middlewares/errors-middleware";
 import { authRoute } from "./routes/auth-route";
 import UserRepository from "./app/models/user-model";
 import { Role } from "@prisma/client";
+import { adminRoute } from "./routes/admin-route";
 // import { liftOff } from "./app/configs/lift.off-config";
 
 const app = express();
@@ -27,15 +27,15 @@ app.use(morgan("dev"));
 // app.use(limiter);
 
 app.use("/api", authRoute);
+app.use("/api", adminRoute);
 
 app.use(errorHandler);
-app.use(errorEmitter);
+
 
 app.listen(PORT, async () => {
   console.log(`docs hosted on http://localhost:${PORT}/api/docs`);
   const existingUser = await UserRepository.findUser(ADMIN_EMAIL);
   if (existingUser) {
-    console.log("was not null");
     return;
   }
   const userRepo = new UserRepository(
@@ -45,5 +45,5 @@ app.listen(PORT, async () => {
     Role.ADMIN,
     ADMIN_NAME
   );
-  await userRepo.add();
+  return await userRepo.add();
 });
