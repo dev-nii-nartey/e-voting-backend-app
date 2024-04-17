@@ -18,7 +18,7 @@ export default class UserRepository {
       const user = await prisma.user.create({
         data: {
           email: this.email,
-          password: hashPassword, 
+          password: hashPassword,
           id: this.id,
           role: this.role,
           name: this.name,
@@ -26,12 +26,11 @@ export default class UserRepository {
         select: {
           email: true,
           id: true,
-        }, 
+        },
       });
       await Database.close();
       return user;
     } catch (error) {
-      console.log('this',error)
       throw new Error("Ops something went wrong, failed to register new user");
     }
   }
@@ -70,13 +69,42 @@ export default class UserRepository {
       const prisma = Database.open();
       const user = await prisma.user.findFirst({
         where: {
-          OR: [{ email: data }, { id: data }],
+          OR: [{ email: data }, { id: data }, { name: data }],
         },
       });
       await Database.close();
       return user;
     } catch (error) {
-      console.log(error);
+      throw new Error();
+    }
+  }
+
+  static async deleteUser(data: string) {
+    try {
+      const prisma = Database.open();
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: data }, { id: data }, { name: data }],
+        },
+      });
+      await Database.close();
+      return user;
+    } catch (error) {
+      throw new Error();
+    }
+  }
+
+  static async filterUsers(data: Role) {
+    try {
+      const prisma = Database.open();
+      const user = await prisma.user.findMany({
+        where: {
+          role: data,
+        },
+      });
+      await Database.close();
+      return user;
+    } catch (error) {
       throw new Error();
     }
   }

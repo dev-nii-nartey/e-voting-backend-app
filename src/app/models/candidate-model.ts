@@ -54,45 +54,76 @@ export default class CandidateRepository {
   }
 
   //ANALYTICS NEED WORK ON
-  static async fetchCandidatesAnalytics() {
-    try {
-      const prisma = Database.open();
-      const candidates = await prisma.candidate.findMany({
-        include: { votes: true },
-      });
-      await Database.close();
-      const analytics = this.candidatePercentage(candidates);
-      return candidates;
-    } catch (error) {
-      throw new Error();
-    }
-  }
+  // static async fetchCandidatesAnalytics() {
+  //   try {
+  //     const prisma = Database.open();
+  //     const candidates = await prisma.candidate.findMany({
+  //       select: { votes: true },
+  //     });
+  //     await Database.close();
+  //     const analytics = this.candidatePercentage(candidates);
+  //     return candidates;
+  //   } catch (error) {
+  //     throw new Error();
+  //   }
+  // }
 
-  private static candidatePercentage(candidates: any) {
-    // Calculate the total number of votes
-    const totalVotes = candidates.reduce(
-      (sum: number, candidate: any) => sum + candidate.votes.length,
-      0
-    );
+  // private static candidatePercentage(candidates: any) {
+  //   // Calculate the total number of votes
+  //   const totalVotes = candidates.reduce(
+  //     (sum: number, candidate: any) => sum + candidate.votes.length,
+  //     0
+  //   );
 
-    // Calculate the percentage share for each candidate
-    const candidatesWithVotePercentage = candidates.map((candidate: any) => {
-      const candidateVotes = candidate.votes.length;
-      const votePercentage =
-        totalVotes > 0 ? (candidateVotes / totalVotes) * 100 : 0;
+  //   // Calculate the percentage share for each candidate
+  //   const candidatesWithVotePercentage = candidates.map((candidate: any) => {
+  //     const candidateVotes = candidate.votes.length;
+  //     const votePercentage =
+  //       totalVotes > 0 ? (candidateVotes / totalVotes) * 100 : 0;
 
-      return {
-        name: candidate.name,
-        position: candidate.portfolio,
-        totalVotes: candidateVotes,
-        votePercentage,
-      };
-    });
-  }
+  //     return {
+  //       name: candidate.name,
+  //       position: candidate.portfolio,
+  //       totalVotes: candidateVotes,
+  //       votePercentage,
+  //     };
+  //   });
+  // }
 
   static async fetchCandidates() {
     const prisma = Database.open();
     const candidates = await prisma.candidate.findMany();
+    await Database.close();
+    return candidates;
+  }
+
+  static async getPortfolio(value: Portfolio) {
+    const prisma = Database.open();
+    const candidates = await prisma.candidate.findMany({
+      where: { portfolio: value },
+    });
+    await Database.close();
+    return candidates;
+  }
+
+  static async filter(value: string) {
+    const prisma = Database.open();
+    const candidates = await prisma.candidate.findMany({
+      where: {
+        OR: [{ position: value }, { name: value }, { nssNumber: value }],
+      },
+    });
+    await Database.close();
+    return candidates;
+  }
+
+  static async delete(value: string) {
+    const prisma = Database.open();
+    const candidates = await prisma.candidate.delete({
+      where: {
+         nssNumber: value 
+      }
+    });
     await Database.close();
     return candidates;
   }

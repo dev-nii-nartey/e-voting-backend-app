@@ -2,8 +2,12 @@ import { Router } from "express";
 import { errorController } from "../app/middlewares/errors-middleware";
 import AdminController from "../app/controllers/admin-controller";
 import IsAdmin from "../app/middlewares/is.admin-middleware";
-import { body, header } from "express-validator";
+import { body, header, param, query } from "express-validator";
 import CandidateRepository from "../app/models/candidate-model";
+import { aspiringPosition } from "../app/utils/portfolio";
+import UserRepository from "../app/models/user-model";
+import AuthController from "../app/controllers/auth-controller";
+import IsRegistrar from "../app/middlewares/is.registrar-middleware";
 
 export const adminRoute: Router = Router();
 
@@ -12,7 +16,9 @@ adminRoute.post(
   body("nssNumber")
     .notEmpty()
     .trim()
-    .toLowerCase()
+    .toUpperCase()
+    .isLength({ min: 13, max: 13 })
+    .withMessage("Nss Number must be 13")
     .escape()
     .custom(async (nssNumber: string) => {
       //find if candidate exist already
@@ -21,12 +27,19 @@ adminRoute.post(
         throw new Error("Candidate is already in the system");
       }
     }),
-  body("name").notEmpty().trim().toLowerCase().escape(),
+  body("name").notEmpty().trim().toUpperCase().escape(),
   body("district").notEmpty().trim().toLowerCase().escape(),
   body("institutionAttended").notEmpty().trim().toLowerCase().escape(),
   body("qualification").notEmpty().trim().toLowerCase().escape(),
   body("posting").notEmpty().trim().toLowerCase().escape(),
-  body("position").notEmpty().trim().toUpperCase().escape(),
+  body("position")
+    .notEmpty()
+    .trim()
+    .toUpperCase()
+    .escape()
+    .custom((value: string) => {
+      return aspiringPosition(value);
+    }),
   body("contact").notEmpty().trim().toLowerCase().escape(),
   header("authorization")
     .notEmpty()
@@ -46,45 +59,137 @@ adminRoute.get(
   IsAdmin.tokenValidator,
   errorController(AdminController.fetchAllCandidates)
 );
-adminRoute.put(
-  "/candidate/:id",
+adminRoute.get(
+  "/candidate/:filter",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
+  param("filter")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to filter by"),
   IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
+  errorController(AdminController.filterCandidate)
 );
+// adminRoute.put(
+//   "/candidate/:nssNumber",
+//   body("nssNumber")
+//     .notEmpty()
+//     .trim()
+//     .toUpperCase()
+//     .isLength({ min: 13, max: 13 })
+//     .withMessage("Nss Number must be 13")
+//     .escape()
+//     .custom(async (nssNumber: string) => {
+//       //find if candidate exist already
+//       const candidate = await CandidateRepository.findCandidate(nssNumber);
+//       if (candidate) {
+//         throw new Error("Candidate is already in the system");
+//       }
+//     }),
+//   body("name").notEmpty().trim().toUpperCase().escape(),
+//   body("district").notEmpty().trim().toLowerCase().escape(),
+//   body("institutionAttended").notEmpty().trim().toLowerCase().escape(),
+//   body("qualification").notEmpty().trim().toLowerCase().escape(),
+//   body("posting").notEmpty().trim().toLowerCase().escape(),
+//   body("position")
+//     .notEmpty()
+//     .trim()
+//     .toUpperCase()
+//     .escape()
+//     .custom((value: string) => {
+//       return aspiringPosition(value);
+//     }),
+//   body("contact").notEmpty().trim().toLowerCase().escape(),
+//   param("filter")
+//     .notEmpty()
+//     .trim()
+//     .escape()
+//     .withMessage("provide a parameter to filter by"),
+//   header("authorization")
+//     .notEmpty()
+//     .trim()
+//     .escape()
+//     .withMessage("provide an access token"),
+//   IsAdmin.tokenValidator,
+//   errorController(AdminController.updateCandidate)
+// );
 adminRoute.delete(
-  "/candidate/:id",
+  "/candidate/:nssNumber",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
+  param("nssNumber")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to delete by")
+    .custom(async (nssNumber: string) => {
+      //find if candidate exist already
+      const candidate = await CandidateRepository.findCandidate(nssNumber);
+      if (!candidate) {
+        throw new Error("User is not in the system");
+      }
+    }),
   IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
+  errorController(AdminController.deleteCandidate)
 );
 
 adminRoute.get(
   "/registrar",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
   IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
+  errorController(AuthController.fetch)
 );
-adminRoute.put(
-  "/registrar/:id",
-  IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
-);
+// adminRoute.put(
+//   "/registrar/:id",
+//   IsAdmin.tokenValidator,
+//   errorController(AdminController.updateRegistrar)
+// );
 adminRoute.delete(
   "/registrar/:id",
+  param("id")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to delete by")
+    .custom(async (id: string) => {
+      //find if candidate exist already
+      const registrar = await UserRepository.findUser(id);
+      if (!registrar) {
+        throw new Error("User is not in the system");
+      }
+    }),
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
   IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
+  errorController(AuthController.delete)
 );
 
 adminRoute.get(
   "/voter",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
   IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
+  errorController(AuthController.fetch)
 );
-adminRoute.put(
-  "/voter",
-  IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
-);
-adminRoute.delete(
-  "/voter",
-  IsAdmin.tokenValidator,
-  errorController(AdminController.fetchAllCandidates)
-);
+// adminRoute.put(
+//   "/voter",
+//   IsRegistrar.tokenValidator,
+//   errorController(AuthController.updateVoter)
+// );

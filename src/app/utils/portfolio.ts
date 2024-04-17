@@ -1,20 +1,20 @@
 import { Portfolio } from "@prisma/client";
 
-export const candidatePortfolio = (position: string): Portfolio => {
+export const aspiringPosition = (position: string): Portfolio => {
   switch (position) {
     case "PRESIDENT":
       return Portfolio.PRESIDENT;
-    case "VICE_PRESIDENT":
+    case "VICE PRESIDENT":
       return Portfolio.VICE_PRESIDENT;
-    case "GENERAL_SECRETARY":
+    case "GENERAL SECRETARY":
       return Portfolio.GENERAL_SECRETARY;
-    case "FINANCIAL_SECRETARY":
+    case "FINANCIAL SECRETARY":
       return Portfolio.FINANCIAL_SECRETARY;
     case "ORGANIZER":
       return Portfolio.ORGANIZER;
-    case "WOMENS_COMMISSIONER":
+    case "WOMENS COMMISSIONER":
       return Portfolio.WOMENS_COMMISSIONER;
     default:
-      return Portfolio.ORGANIZER;
+      throw new Error(`${position}  is an invalid input`)
   }
 };

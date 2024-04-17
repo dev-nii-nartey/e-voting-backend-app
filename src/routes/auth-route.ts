@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body, header } from "express-validator";
+import { body, header, param } from "express-validator";
 import UserRepository from "../app/models/user-model";
 import AuthController from "../app/controllers/auth-controller";
 import { errorController } from "../app/middlewares/errors-middleware";
@@ -70,7 +70,34 @@ authRoute.post(
       }
     }),
   body("name").notEmpty().trim().toLowerCase().escape(),
-  header("authorization").notEmpty().trim().escape().withMessage('provide an access token'),
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
   IsRegistrar.tokenValidator,
   errorController(AuthController.register)
+);
+
+authRoute.delete(
+  "/voter:id",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
+  param("id")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to delete by")
+    .custom(async (id: string) => {
+      //find if candidate exist already
+      const voter = await UserRepository.findUser(id);
+      if (!voter) {
+        throw new Error("User is not in the system");
+      }
+    }),
+  IsRegistrar.tokenValidator,
+  errorController(AuthController.delete)
 );

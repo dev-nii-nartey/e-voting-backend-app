@@ -65,4 +65,32 @@ export default class AuthController {
     };
     return response.status(success_code).json(new JsonOutput(responseData));
   }
+
+  static async fetch(request: Request, response: Response) {
+    const result = validationResult(request);
+    if (!result.isEmpty()) {
+      throw new HttpException(unprocessableEntity, result.array());
+    }
+    const filter = userRole(request.url)
+    const data = await UserRepository.filterUsers(filter);
+    const responseData = {
+      message: `${filter} retreived successfully`,
+      details: { data },
+    };
+    return response.status(success_code).json(new JsonOutput(responseData));
+  }
+
+   static async delete(request: Request, response: Response) {
+    const result = validationResult(request);
+    if (!result.isEmpty()) {
+      throw new HttpException(unprocessableEntity, result.array());
+    }
+    const { id } = matchedData(request);
+    const data = await UserRepository.deleteUser(id);
+    const responseData = {
+      message: `${data} retreived successfully`,
+      details: { data },
+    };
+    return response.status(success_code).json(new JsonOutput(responseData));
+  }
 }
