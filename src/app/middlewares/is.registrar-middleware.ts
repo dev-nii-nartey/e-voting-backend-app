@@ -23,10 +23,11 @@ export default class IsRegistrar {
       let token = authorization.split(" ")[1];
       const data = <{ user: string }>await verifyAccessToken(token);
       const { role } = await UserRepository.findByUniqueKey(data.user);
-      if (role !== Role.ADMIN || Role.REGISTRAR) {
+      if (role === Role.ADMIN || role === Role.REGISTRAR) {
+        next();
+      } else {
         throw new Error("You are not authoriazed for this operation");
       }
-      next();
     } catch (error) {
       return response.status(unauthorized).json(new JsonOutput(error));
     }
