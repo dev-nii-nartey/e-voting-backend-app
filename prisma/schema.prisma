@@ -14,11 +14,12 @@ datasource db {
 }
 
 model User {
-  name     String?
-  id       String  @id
+  name     String
+  id       String  @id @unique
   email    String  @unique
   password String
   role     Role
+  hasVoted Boolean @default(false)
 
   @@map("users")
 }
@@ -43,6 +44,8 @@ model Vote {
   id          Int       @id @default(autoincrement())
   candidateId Int
   candidate   Candidate @relation(fields: [candidateId], references: [id])
+  dayVoted    DateTime  @default(now()) @db.Date
+  timeVoted   DateTime  @default(now()) @db.Time()
 
   @@map("votes")
 }

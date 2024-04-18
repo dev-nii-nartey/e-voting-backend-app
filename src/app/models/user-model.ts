@@ -35,6 +35,35 @@ export default class UserRepository {
     }
   }
 
+  async update() {
+    try {
+      const prisma = Database.open();
+      const user = await prisma.user.update({
+        where: {
+          id: this.id,
+        },
+        data: {
+          email: this.email,
+          password: this.password,
+          id: this.id,
+          role: this.role,
+          name: this.name,
+        },
+        select: {
+          email: true,
+          id: true,
+          name: true,
+        },
+      });
+      await Database.close();
+      return user;
+    } catch (error) {
+      throw new Error(
+        "Ops something went wrong, failed to update user details"
+      );
+    }
+  }
+
   static async customUserId(role: string) {
     try {
       const prisma = Database.open();
@@ -82,9 +111,12 @@ export default class UserRepository {
   static async deleteUser(data: string) {
     try {
       const prisma = Database.open();
-      const user = await prisma.user.findFirst({
+      const user = await prisma.user.delete({
         where: {
-          OR: [{ email: data }, { id: data }, { name: data }],
+          id: data,
+        },
+        select: {
+          name: true,
         },
       });
       await Database.close();
@@ -101,11 +133,43 @@ export default class UserRepository {
         where: {
           role: data,
         },
+        select: {
+          name: true,
+          id: true,
+          email: true,
+          role: true,
+        },
       });
       await Database.close();
       return user;
     } catch (error) {
       throw new Error();
+    }
+  }
+
+  async flag(voter: any) {
+    try {
+      const prisma = Database.open();
+      const user = await prisma.user.update({
+        where: {
+          id: this.id,
+        },
+        data: {
+          hasVoted: true,
+        },
+        select: {
+          email: true,
+          id: true,
+          name: true,
+          hasVoted: true,
+        },
+      });
+      await Database.close();
+      return user;
+    } catch (error) {
+      throw new Error(
+        "Ops something went wrong, failed to update user details"
+      );
     }
   }
 }
