@@ -60,20 +60,41 @@ export default class AdminController {
     return response.status(success_code).json(new JsonOutput(responseData));
   }
 
-  // static async updateCandidate(request: Request, response: Response) {
-  //   const result = validationResult(request);
-  //   if (!result.isEmpty()) {
-  //     throw new HttpException(unprocessableEntity, result.array());
-  //   }
-  //   const data = matchedData(request);
-  //   const candidates = await CandidateRepository.update(data.nssNumber);
-  //   const responseData = {
-  //     message: `Candidate  retreived successfully`,
-  //     details: { candidates },
-  //   };
-  //   return response.status(success_code).json(new JsonOutput(responseData));
-  // }
-  
+  static async updateCandidate(request: Request, response: Response) {
+    const result = validationResult(request);
+    if (!result.isEmpty()) {
+      throw new HttpException(unprocessableEntity, result.array());
+    }
+    const {
+      name,
+      nssNumber,
+      institutionAttended,
+      qualification,
+      position,
+      posting,
+      contact,
+      portfolio,
+      district,
+    } = matchedData(request);
+    const updateCandidate = new CandidateRepository(
+      name,
+      nssNumber,
+      institutionAttended,
+      qualification,
+      posting,
+      position,
+      contact,
+      portfolio,
+      district
+    );
+    const candidate = await updateCandidate.update();
+    const responseData = {
+      message: `Candidate  updated successfully`,
+      details: { candidate },
+    };
+    return response.status(success_code).json(new JsonOutput(responseData));
+  }
+
   static async deleteCandidate(request: Request, response: Response) {
     const result = validationResult(request);
     if (!result.isEmpty()) {
@@ -100,5 +121,5 @@ export default class AdminController {
       details: { candidates },
     };
     return response.status(success_code).json(new JsonOutput(responseData));
-  } 
+  }
 }
