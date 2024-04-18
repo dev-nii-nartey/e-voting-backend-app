@@ -11,7 +11,7 @@ import { success_code, unprocessableEntity } from "../configs/status-code";
 import { JsonOutput } from "../middlewares/json.response-middleware";
 import { userRole } from "../utils/roles";
 import { Password } from "../utils/password.generator";
-import { Role } from "@prisma/client";
+
 
 export default class AuthController {
   constructor() {}
@@ -51,17 +51,11 @@ export default class AuthController {
     const role = userRole(request.url);
     const password = Password.generate();
     const userId = await UserRepository.customUserId(role);
-    const userPayload = new UserRepository(
-      email,
-      password,
-      userId,
-      role,
-      name
-    );
-    const newUser = await userPayload.add();
+    const userPayload = new UserRepository(email, password, userId, role, name);
+    const data = await userPayload.add();
     const responseData = {
       message: `User account created successfully`,
-      details: { newUser,password },
+      details: { data, password },
     };
     return response.status(success_code).json(new JsonOutput(responseData));
   }
@@ -71,7 +65,7 @@ export default class AuthController {
     if (!result.isEmpty()) {
       throw new HttpException(unprocessableEntity, result.array());
     }
-    const filter = userRole(request.url)
+    const filter = userRole(request.url);
     const data = await UserRepository.filterUsers(filter);
     const responseData = {
       message: `${filter} retreived successfully`,
@@ -80,7 +74,7 @@ export default class AuthController {
     return response.status(success_code).json(new JsonOutput(responseData));
   }
 
-   static async delete(request: Request, response: Response) {
+  static async delete(request: Request, response: Response) {
     const result = validationResult(request);
     if (!result.isEmpty()) {
       throw new HttpException(unprocessableEntity, result.array());
@@ -88,7 +82,29 @@ export default class AuthController {
     const { id } = matchedData(request);
     const data = await UserRepository.deleteUser(id);
     const responseData = {
-      message: `${data} retreived successfully`,
+      message: `user deleted successfully`,
+      details: { data },
+    };
+    return response.status(success_code).json(new JsonOutput(responseData));
+  }
+
+  static async update(request: Request, response: Response) {
+    const result = validationResult(request);
+    if (!result.isEmpty()) {
+      throw new HttpException(unprocessableEntity, result.array());
+    }
+    const { id, name } = matchedData(request);
+    const user = await UserRepository.findByUniqueKey(id);
+    const updatedUser = new UserRepository(
+      user.email,
+      user.password,
+      id,
+      user.role,
+      name
+    );
+    const data = await updatedUser.update();
+    const responseData = {
+      message: `User account updated successfully`,
       details: { data },
     };
     return response.status(success_code).json(new JsonOutput(responseData));
