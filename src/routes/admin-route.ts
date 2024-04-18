@@ -70,53 +70,55 @@ adminRoute.get(
     .notEmpty()
     .trim()
     .escape()
+    .toUpperCase()
     .withMessage("provide a parameter to filter by"),
   IsAdmin.tokenValidator,
   errorController(AdminController.filterCandidate)
 );
-// adminRoute.put(
-//   "/candidate/:nssNumber",
-//   body("nssNumber")
-//     .notEmpty()
-//     .trim()
-//     .toUpperCase()
-//     .isLength({ min: 13, max: 13 })
-//     .withMessage("Nss Number must be 13")
-//     .escape()
-//     .custom(async (nssNumber: string) => {
-//       //find if candidate exist already
-//       const candidate = await CandidateRepository.findCandidate(nssNumber);
-//       if (candidate) {
-//         throw new Error("Candidate is already in the system");
-//       }
-//     }),
-//   body("name").notEmpty().trim().toUpperCase().escape(),
-//   body("district").notEmpty().trim().toLowerCase().escape(),
-//   body("institutionAttended").notEmpty().trim().toLowerCase().escape(),
-//   body("qualification").notEmpty().trim().toLowerCase().escape(),
-//   body("posting").notEmpty().trim().toLowerCase().escape(),
-//   body("position")
-//     .notEmpty()
-//     .trim()
-//     .toUpperCase()
-//     .escape()
-//     .custom((value: string) => {
-//       return aspiringPosition(value);
-//     }),
-//   body("contact").notEmpty().trim().toLowerCase().escape(),
-//   param("filter")
-//     .notEmpty()
-//     .trim()
-//     .escape()
-//     .withMessage("provide a parameter to filter by"),
-//   header("authorization")
-//     .notEmpty()
-//     .trim()
-//     .escape()
-//     .withMessage("provide an access token"),
-//   IsAdmin.tokenValidator,
-//   errorController(AdminController.updateCandidate)
-// );
+adminRoute.put(
+  "/candidate/:nssNumber",
+  body("nssNumber")
+    .notEmpty()
+    .trim()
+    .toUpperCase()
+    .isLength({ min: 13, max: 13 })
+    .withMessage("Nss Number must be 13")
+    .escape()
+    .custom(async (nssNumber: string) => {
+      //find if candidate exist already
+      const candidate = await CandidateRepository.findCandidate(nssNumber);
+      if (!candidate) {
+        throw new Error("Candidate is already in the system");
+      }
+    }),
+  body("name").notEmpty().trim().toUpperCase().escape(),
+  body("district").notEmpty().trim().toLowerCase().escape(),
+  body("institutionAttended").notEmpty().trim().toLowerCase().escape(),
+  body("qualification").notEmpty().trim().toLowerCase().escape(),
+  body("posting").notEmpty().trim().toLowerCase().escape(),
+  body("position")
+    .notEmpty()
+    .trim()
+    .toUpperCase()
+    .escape()
+    .custom((value: string) => {
+      return aspiringPosition(value);
+    }),
+  body("contact").notEmpty().trim().toLowerCase().escape(),
+  param("nssNumber")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to update by"),
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
+  IsAdmin.tokenValidator,
+  errorController(AdminController.updateCandidate)
+);
+
 adminRoute.delete(
   "/candidate/:nssNumber",
   header("authorization")
@@ -128,6 +130,7 @@ adminRoute.delete(
     .notEmpty()
     .trim()
     .escape()
+    .toUpperCase()
     .withMessage("provide a parameter to delete by")
     .custom(async (nssNumber: string) => {
       //find if candidate exist already
@@ -150,17 +153,14 @@ adminRoute.get(
   IsAdmin.tokenValidator,
   errorController(AuthController.fetch)
 );
-// adminRoute.put(
-//   "/registrar/:id",
-//   IsAdmin.tokenValidator,
-//   errorController(AdminController.updateRegistrar)
-// );
+
 adminRoute.delete(
   "/registrar/:id",
   param("id")
     .notEmpty()
     .trim()
     .escape()
+    .toUpperCase()
     .withMessage("provide a parameter to delete by")
     .custom(async (id: string) => {
       //find if candidate exist already
@@ -188,8 +188,3 @@ adminRoute.get(
   IsAdmin.tokenValidator,
   errorController(AuthController.fetch)
 );
-// adminRoute.put(
-//   "/voter",
-//   IsRegistrar.tokenValidator,
-//   errorController(AuthController.updateVoter)
-// );

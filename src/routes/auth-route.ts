@@ -32,7 +32,7 @@ authRoute.post(
   errorController(AuthController.login)
 );
 
-//REGISTER
+//enroll registrar
 authRoute.post(
   "/registrar",
   body("email")
@@ -54,6 +54,36 @@ authRoute.post(
   errorController(AuthController.register)
 );
 
+//update registrar
+authRoute.put(
+  "/registrar/:id",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
+  body("name").notEmpty().trim().escape(),
+  param("id")
+    .notEmpty()
+    .toUpperCase()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to update registrar by")
+    .custom(async (id: string) => {
+      //find if registrar exist already
+      const registrar = await UserRepository.findUser(id);
+      if (!registrar) {
+        throw new Error("User is not in the system");
+      }
+      if (registrar.role !== "REGISTRAR") {
+        throw new Error("User is not a registrar in the system");
+      }
+    }),
+  IsAdmin.tokenValidator,
+  errorController(AuthController.update)
+);
+
+//enroll voter
 authRoute.post(
   "/voter",
   body("email")
@@ -63,7 +93,6 @@ authRoute.post(
     .toLowerCase()
     .escape()
     .custom(async (value: string) => {
-      //find if user exist already
       const existingUser = await UserRepository.findUser(value);
       if (existingUser) {
         throw new Error("User is already registered in the system");
@@ -79,6 +108,36 @@ authRoute.post(
   errorController(AuthController.register)
 );
 
+//update voter
+authRoute.put(
+  "/voter/:id",
+  header("authorization")
+    .notEmpty()
+    .trim()
+    .escape()
+    .withMessage("provide an access token"),
+  body("name").notEmpty().trim().toLowerCase().escape(),
+  param("id")
+    .notEmpty()
+    .toUpperCase()
+    .trim()
+    .escape()
+    .withMessage("provide a parameter to update voter by")
+    .custom(async (id: string) => {
+      //find if voter exist already
+      const voter = await UserRepository.findUser(id);
+      if (!voter) {
+        throw new Error("User is not in the system");
+      }
+      if (voter.role !== "VOTER") {
+        throw new Error("User is not a voter in the system");
+      }
+    }),
+  IsRegistrar.tokenValidator,
+  errorController(AuthController.update)
+);
+
+//remove voter
 authRoute.delete(
   "/voter:id",
   header("authorization")
@@ -88,11 +147,12 @@ authRoute.delete(
     .withMessage("provide an access token"),
   param("id")
     .notEmpty()
+    .toUpperCase()
     .trim()
     .escape()
     .withMessage("provide a parameter to delete by")
     .custom(async (id: string) => {
-      //find if candidate exist already
+      //find if voter exist already
       const voter = await UserRepository.findUser(id);
       if (!voter) {
         throw new Error("User is not in the system");
