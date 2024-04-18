@@ -121,10 +121,40 @@ export default class CandidateRepository {
     const prisma = Database.open();
     const candidates = await prisma.candidate.delete({
       where: {
-         nssNumber: value 
-      }
+        nssNumber: value,
+      },
     });
     await Database.close();
     return candidates;
+  }
+
+  async update() {
+    try {
+      const prisma = Database.open();
+      const user = await prisma.candidate.update({
+        where: {
+          nssNumber: this.nssNumber,
+        },
+        data: {
+          name: this.name,
+          nssNumber: this.nssNumber,
+          position: this.position,
+          qualification: this.qualification,
+          institutionAttended: this.institutionAttended,
+          posting: this.posting,
+          contact: this.contact,
+          district: this.district,
+          portfolio: this.portfolio,
+        },
+        select: {
+          name: true,
+          nssNumber: true,
+        },
+      });
+      await Database.close();
+      return user;
+    } catch (error) {
+      throw new Error("Ops something went wrong, failed to register new user");
+    }
   }
 }
